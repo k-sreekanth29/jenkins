@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    environment {
+    DOCKERHUB_CREDENTIALS = credentials('sreekanth-docker')
+    }
+
+    stages {
+        stage('git-checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/k-sreekanth29/New.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh'docker build -t image1:4 .'
+            }
+        }
+        stage('docker-login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        stage('tag') {
+           steps {
+               sh 'docker tag image1:4 sreekanth630/docker:myimages'
+           }
+        }
+        stage('push') {
+            steps {
+                sh 'docker push docker.io/sreekanth630/docker:myimages'
+            }
+        }
+        stage('deploy') {
+            steps {
+                sh 'docker run -itd --name count6 -p 8083:80 image1:4'
+            }
+        }
+    }
+}
